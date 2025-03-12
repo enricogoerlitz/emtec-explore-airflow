@@ -1,6 +1,6 @@
 import pandas as pd
 
-from sqlalchemy import text
+from common.daglogging import logger
 from common.utils import dwh
 
 
@@ -14,34 +14,30 @@ TABLES = [
 ]
 
 
-def ensure_schema_exists():
-    with dwh.engine.begin() as conn:  # ✅ Correct: Automatically commits
-        conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA_NAME}"))
+def import_table(table: str) -> None:
+    df = pd.read_excel(SOURCE_FILEPATH, sheet_name=table)
+
+    df.to_sql(
+        name=table,
+        con=dwh.engine,
+        schema=SCHEMA_NAME,
+        if_exists="replace",
+        index=False
+    )
 
 
 def import_tables():
-    ensure_schema_exists()  # Ensure schema exists before writing data
+    dwh.ensure_schema_exists()
 
     is_error = False
     for table in TABLES:
         try:
-            # Read data from Excel sheet
-            df = pd.read_excel(SOURCE_FILEPATH, sheet_name=table)
+            import_table(table)
 
-            # Write DataFrame to PostgreSQL in schema "projecttool.{table}"
-            df.to_sql(
-                name=table,
-                con=dwh.engine,
-                schema=SCHEMA_NAME,
-                if_exists="replace",
-                index=False
-            )
-
-            print(f"✅ Successfully imported {table} into {SCHEMA_NAME}.{table}")
-
+            logger.info(f"✅ Successfully imported {table} into {SCHEMA_NAME}.{table}")
         except Exception as e:
             is_error = True
-            print(f"❌ Failed to import {table}: {e}")
+            logger.error(f"❌ Failed to import {table}: {e}")
 
     if is_error:
         raise Exception(f"Failed to import {SCHEMA_NAME}")
