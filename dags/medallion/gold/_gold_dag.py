@@ -2,10 +2,10 @@ from datetime import timedelta
 from airflow import DAG
 from airflow.utils.dates import days_ago
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
-from medallion.bronze.projecttool._bronze_projecttool_dag import DAG_NAME as projecttool_dag
+from medallion.gold.gold_pr._gold_pr_dag import DAG_NAME as gold_pr_dag
 
 
-DAG_NAME = "bronze_dag"
+DAG_NAME = "gold_dag"
 
 
 default_args = {
@@ -25,14 +25,14 @@ with DAG(
     catchup=False
 ) as dag:
 
-    import_projecttool = TriggerDagRunOperator(
-        task_id=f"trigger_{projecttool_dag}",
-        trigger_dag_id=projecttool_dag,
+    gold_pr = TriggerDagRunOperator(
+        task_id=f"trigger_{gold_pr_dag}",
+        trigger_dag_id=gold_pr_dag,
         wait_for_completion=True,
         poke_interval=5,
-        conf={"message": "Start import_projecttool"},
+        conf={"message": "Start processing gold_pr"},
     )
 
-    # ... other source systems
+    # ... other gold transformations
 
-    import_projecttool
+    gold_pr

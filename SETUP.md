@@ -25,3 +25,7 @@ $ docker compose exec airflow-scheduler python -m pip install -r /opt/airflow/co
 Link: (http://localhost:8080/home)[http://localhost:8080/home]
 username: airflow
 password: airflow
+
+Add postgres connection: Admin > Connection > new connection
+
+CREATE SCHEMA gold_pr;

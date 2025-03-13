@@ -1,10 +1,10 @@
 import pandas as pd
 
 from common.daglogging import logger
-from common.utils import dwh
+from common.utils.dwh import dwh, Engine
 
 
-SCHEMA_NAME = "projecttool"
+SCHEMA_NAME = "bronze_projecttool"
 SOURCE_FILEPATH = "/opt/airflow/data/source/data.xlsx"
 TABLES = [
     "users",
@@ -14,12 +14,12 @@ TABLES = [
 ]
 
 
-def import_table(table: str) -> None:
+def import_table(engine: Engine, table: str) -> None:
     df = pd.read_excel(SOURCE_FILEPATH, sheet_name=table)
 
     df.to_sql(
         name=table,
-        con=dwh.engine,
+        con=engine,
         schema=SCHEMA_NAME,
         if_exists="replace",
         index=False
@@ -27,12 +27,13 @@ def import_table(table: str) -> None:
 
 
 def import_tables():
-    dwh.ensure_schema_exists()
+    engine = dwh.dwh_engine
+    dwh.create_schema_if_not_exists(engine, SCHEMA_NAME)
 
     is_error = False
     for table in TABLES:
         try:
-            import_table(table)
+            import_table(engine, table)
 
             logger.info(f"✅ Successfully imported {table} into {SCHEMA_NAME}.{table}")
         except Exception as e:

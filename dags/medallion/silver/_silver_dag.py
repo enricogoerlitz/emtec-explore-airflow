@@ -2,10 +2,10 @@ from datetime import timedelta
 from airflow import DAG
 from airflow.utils.dates import days_ago
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
-from medallion.bronze.projecttool._bronze_projecttool_dag import DAG_NAME as projecttool_dag
+from medallion.silver.projecttool._silver_projecttool_dag import DAG_NAME as projecttool_dag
 
 
-DAG_NAME = "bronze_dag"
+DAG_NAME = "silver_dag"
 
 
 default_args = {
@@ -25,14 +25,14 @@ with DAG(
     catchup=False
 ) as dag:
 
-    import_projecttool = TriggerDagRunOperator(
+    transform_projecttool = TriggerDagRunOperator(
         task_id=f"trigger_{projecttool_dag}",
         trigger_dag_id=projecttool_dag,
         wait_for_completion=True,
         poke_interval=5,
-        conf={"message": "Start import_projecttool"},
+        conf={"message": "Start transform_projecttool"},
     )
 
-    # ... other source systems
+    # ... other schemata systems
 
-    import_projecttool
+    transform_projecttool
