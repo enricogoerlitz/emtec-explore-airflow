@@ -29,3 +29,15 @@ password: airflow
 Add postgres connection: Admin > Connection > new connection
 
 CREATE SCHEMA gold_pr;
+
+
+### API Call:
+
+POST http://localhost:8080/api/v1/dags/master_dag/dagRuns
+{
+    "dag_run_id": "run_via_api_1",
+    "logical_date": "2025-03-20T00:00:00Z"
+}
+Basic-Auth: airflow + airflow
+
+- mit GET und dag_run_id kann man dann auch status abfragen
